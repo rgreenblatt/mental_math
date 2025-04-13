@@ -141,6 +141,76 @@
             text-align: center;
         }
         
+        /* Help section styles */
+        .help-container {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .help-btn {
+            background-color: #2196F3;
+            color: white;
+            <!-- border: none; -->
+            <!-- border-radius: 50%; -->
+            <!-- width: 10px; -->
+            <!-- height: 30px; -->
+            <!-- font-size: 16px; -->
+            <!-- font-weight: bold; -->
+            <!-- cursor: pointer; -->
+            <!-- display: flex; -->
+            <!-- align-items: center; -->
+            <!-- justify-content: center; -->
+            <!-- box-shadow: 0 1px 3px rgba(0,0,0,0.2); -->
+            <!-- transition: background-color 0.3s; -->
+        }
+        
+        .help-btn:hover {
+            background-color: #0b7dda;
+        }
+        
+        .help-content {
+            display: none;
+            background-color: #fff;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            margin-top: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            max-width: 100%;
+            z-index: 100;
+        }
+        
+        .help-content h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #2196F3;
+        }
+        
+        .help-content p {
+            margin: 10px 0;
+        }
+        
+        .help-content ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        .help-content .close-help {
+            display: block;
+            text-align: right;
+            margin-top: 10px;
+            color: #2196F3;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .help-visible .help-content {
+            display: block;
+        }
+        
         /* Mobile-specific styles */
         @media (max-width: 480px) {
             body {
@@ -170,15 +240,6 @@
 </head>
 <body>
     <div class="container">
-        <h1>Mental Math</h1>
-        
-        <div class="controls">
-            <label>
-                <input type="checkbox" id="division-toggle">
-                Enable division problems
-            </label>
-        </div>
-        
         <div class="stats-container" id="stats-container">
             <div class="stats-toggle" id="stats-toggle">
                 <span>Performance Stats</span>
@@ -214,6 +275,46 @@
         
         <div class="result" id="result"></div>
         
+        <div class="controls">
+            <label>
+                <input type="checkbox" id="division-toggle">
+                Enable division problems
+            </label>
+        </div>
+        
+        <div class="help-container">
+            <button class="help-btn" id="help-btn">?</button>
+            <div class="help-content" id="help-content">
+                <h3>How to Use Mental Math Trainer</h3>
+                <p><strong>Overview:</strong> This tool helps you improve your mental math skills with timed challenges.</p>
+                
+                <h4>How it Works:</h4>
+                <ul>
+                    <li><strong>Problem Display:</strong> A math problem appears for a few seconds, then disappears.</li>
+                    <li><strong>Answer:</strong> Solve the problem in your head and type your answer.</li>
+                    <li><strong>Feedback:</strong> The app will tell you if you're right or wrong and track your performance.</li>
+                </ul>
+                
+                <h4>Tips:</h4>
+                <ul>
+                    <li>If a problem disappears before you can see it, click <strong>Skip</strong> to get a new one.</li>
+                    <li>For division problems, enter your answer as "quotient, remainder" (e.g., "5, 3").</li>
+                    <li>Click "Performance Stats" to track your average solving time and accuracy.</li>
+                    <li>The Alpha value adjusts how much recent problems affect your average (higher = more weight to recent problems).</li>
+                </ul>
+                
+                <h4>Controls:</h4>
+                <ul>
+                    <li><strong>Enable division problems:</strong> Toggle to practice both multiplication and division.</li>
+                    <li><strong>Skip:</strong> Get a new problem without recording a result.</li>
+                    <li><strong>Submit:</strong> Check your answer (or press Enter).</li>
+                </ul>
+                
+                <span class="close-help" id="close-help">Close Help</span>
+            </div>
+        </div>
+        
+        
         <div id="history"></div>
     </div>
 
@@ -231,6 +332,10 @@
         const multStatsDiv = document.getElementById('mult-stats');
         const divStatsDiv = document.getElementById('div-stats');
         const alphaInput = document.getElementById('alpha-input');
+        const helpBtn = document.getElementById('help-btn');
+        const helpContent = document.getElementById('help-content');
+        const closeHelpBtn = document.getElementById('close-help');
+        const helpContainer = document.querySelector('.help-container');
         
         // Stats elements
         const multTimeElement = document.getElementById('mult-time');
@@ -283,6 +388,15 @@
             statsContainer.classList.toggle('stats-visible');
             const icon = statsToggle.querySelector('.toggle-icon');
             icon.textContent = statsContainer.classList.contains('stats-visible') ? '▲' : '▼';
+        });
+        
+        // Help button functionality
+        helpBtn.addEventListener('click', function() {
+            helpContainer.classList.toggle('help-visible');
+        });
+        
+        closeHelpBtn.addEventListener('click', function() {
+            helpContainer.classList.remove('help-visible');
         });
         
         // Alpha input change
