@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Math</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 10px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .problem {
+            font-size: 24px;
+            margin: 20px 0;
+            height: 36px;
+        }
+        .input-area {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        input[type="text"] {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            padding: 8px;
+            width: 100%;
+            max-width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            font-family: 'Courier New', monospace;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            min-width: 90px;
+        }
+        #submit-btn {
+            background-color: #4CAF50;
+        }
+        #skip-btn {
+            background-color: #f44336;
+        }
+        .result {
+            font-size: 18px;
+            margin: 20px 0;
+            color: #333;
+            word-wrap: break-word;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+        #history {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        
+        /* Stats style */
+        .stats-container {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 12px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+            padding: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 180px;
+            opacity: 0.85;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+        .stats-container:hover {
+            opacity: 1;
+        }
+        .stats-toggle {
+            cursor: pointer;
+            color: #555;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stats-content {
+            display: none;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .stats-visible .stats-content {
+            display: block;
+        }
+        .stat-value {
+            font-weight: bold;
+        }
+        .stat-label {
+            color: #666;
+        }
+        .stat-separator {
+            margin: 6px 0;
+            border-top: 1px dashed #ddd;
+        }
+        .alpha-control {
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .alpha-control input {
+            width: 50px;
+            text-align: center;
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px 5px;
+            }
+            .container {
+                padding: 10px;
+            }
+            .problem {
+                font-size: 22px;
+            }
+            .result, #history {
+                font-size: 16px;
+            }
+            button {
+                padding: 8px 16px;
+            }
+            .stats-container {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin: 10px 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mental Math</h1>
+        
+        <div class="controls">
+            <label>
+                <input type="checkbox" id="division-toggle">
+                Enable division problems
+            </label>
+        </div>
+        
+        <div class="stats-container" id="stats-container">
+            <div class="stats-toggle" id="stats-toggle">
+                <span>Performance Stats</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="stats-content">
+                <div id="mult-stats">
+                    <div><span class="stat-label">Multiplication</span></div>
+                    <div>Time: <span class="stat-value" id="mult-time">-</span> s</div>
+                    <div>Accuracy: <span class="stat-value" id="mult-accuracy">-</span>%</div>
+                </div>
+                <div id="div-stats" style="display: none;">
+                    <div class="stat-separator"></div>
+                    <div><span class="stat-label">Division</span></div>
+                    <div>Time: <span class="stat-value" id="div-time">-</span> s</div>
+                    <div>Accuracy: <span class="stat-value" id="div-accuracy">-</span>%</div>
+                </div>
+                <div class="stat-separator"></div>
+                <div class="alpha-control">
+                    <label for="alpha-input">Alpha:</label>
+                    <input type="number" id="alpha-input" min="0.1" max="0.99" step="0.01" value="0.9">
+                </div>
+            </div>
+        </div>
+        
+        <div class="problem" id="problem"></div>
+        
+        <div class="input-area">
+            <input type="text" id="answer" placeholder="Enter your answer" disabled>
+            <button id="submit-btn" disabled>Submit</button>
+            <button id="skip-btn">Skip</button>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div id="history"></div>
+    </div>
+
+    <script>
+        // DOM elements
+        const problemElement = document.getElementById('problem');
+        const answerInput = document.getElementById('answer');
+        const submitButton = document.getElementById('submit-btn');
+        const skipButton = document.getElementById('skip-btn');
+        const resultElement = document.getElementById('result');
+        const divisionToggle = document.getElementById('division-toggle');
+        const historyElement = document.getElementById('history');
+        const statsToggle = document.getElementById('stats-toggle');
+        const statsContainer = document.getElementById('stats-container');
+        const multStatsDiv = document.getElementById('mult-stats');
+        const divStatsDiv = document.getElementById('div-stats');
+        const alphaInput = document.getElementById('alpha-input');
+        
+        // Stats elements
+        const multTimeElement = document.getElementById('mult-time');
+        const multAccuracyElement = document.getElementById('mult-accuracy');
+        const divTimeElement = document.getElementById('div-time');
+        const divAccuracyElement = document.getElementById('div-accuracy');
+        
+        // State variables
+        let currentProblem = null;
+        let startTime = null;
+        let allowDivision = false;
+        let isWaiting = false;
+        
+        // EMA tracking variables
+        let alpha = 0.9; // Default alpha value
+        
+        // Separate stats for multiplication and division
+        const stats = {
+            multiplication: {
+                totalProblems: 0,
+                correctProblems: 0,
+                timeEMA: null,
+                accuracyEMA: null,
+                hasData: false
+            },
+            division: {
+                totalProblems: 0,
+                correctProblems: 0,
+                timeEMA: null,
+                accuracyEMA: null,
+                hasData: false
+            }
+        };
+        
+        // Initialize
+        divisionToggle.addEventListener('change', function() {
+            allowDivision = this.checked;
+        });
+        
+        submitButton.addEventListener('click', checkAnswer);
+        skipButton.addEventListener('click', skipProblem);
+        answerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+        
+        // Stats toggle functionality
+        statsToggle.addEventListener('click', function() {
+            statsContainer.classList.toggle('stats-visible');
+            const icon = statsToggle.querySelector('.toggle-icon');
+            icon.textContent = statsContainer.classList.contains('stats-visible') ? '▲' : '▼';
+        });
+        
+        // Alpha input change
+        alphaInput.addEventListener('change', function() {
+            const newAlpha = parseFloat(this.value);
+            if (!isNaN(newAlpha) && newAlpha >= 0.1 && newAlpha <= 0.99) {
+                alpha = newAlpha;
+            } else {
+                this.value = alpha; // Reset to current value if invalid
+            }
+        });
+        
+        // Start the practice
+        startNewProblem();
+        
+        // Function to update EMA
+        function updateEMA(currentEMA, newValue, problemCount) {
+            if (currentEMA === null) {
+                return newValue; // First value in the sequence
+            }
+            
+            // Unbiased EMA calculation
+            // For the first few values, we adjust the weight to prevent bias
+            const effectiveAlpha = problemCount < 10 ? 1 / (problemCount + 1) : alpha;
+            return effectiveAlpha * newValue + (1 - effectiveAlpha) * currentEMA;
+        }
+        
+        // Function to update the stats display
+        function updateStatsDisplay() {
+            if (stats.multiplication.hasData && stats.multiplication.timeEMA !== null) {
+                multTimeElement.textContent = stats.multiplication.timeEMA.toFixed(1);
+                multAccuracyElement.textContent = (stats.multiplication.accuracyEMA * 100).toFixed(1);
+                multStatsDiv.style.display = 'block';
+            }
+            
+            if (stats.division.hasData && stats.division.timeEMA !== null) {
+                divTimeElement.textContent = stats.division.timeEMA.toFixed(1);
+                divAccuracyElement.textContent = (stats.division.accuracyEMA * 100).toFixed(1);
+                divStatsDiv.style.display = 'block';
+            }
+        }
+        
+        function skipProblem() {
+            // Skip current problem and start a new one
+            // without logging any results
+            startNewProblem();
+        }
+        
+        function startNewProblem() {
+            // Clear previous result and input
+            resultElement.textContent = '';
+            answerInput.value = '';
+            answerInput.disabled = true;
+            submitButton.disabled = true;
+            
+            // Generate a new problem
+            const division = allowDivision && Math.random() < 0.5;
+            
+            if (division) {
+                const l = Math.floor(Math.random() * 1000000);
+                const r = Math.floor(Math.random() * 99) + 1; // 1-99
+                
+                currentProblem = {
+                    left: l,
+                    right: r,
+                    expected: [Math.floor(l / r), l % r],
+                    symbol: '/',
+                    parse: function(s) {
+                        return s.split(',').map(v => parseInt(v.trim()));
+                    },
+                    delayTime: 5000,
+                    type: 'division'
+                };
+            } else {
+                const l = Math.floor(Math.random() * 1000);
+                const r = Math.floor(Math.random() * 1000);
+                
+                currentProblem = {
+                    left: l,
+                    right: r,
+                    expected: l * r,
+                    symbol: '*',
+                    parse: function(s) {
+                        return parseInt(s);
+                    },
+                    delayTime: 2000,
+                    type: 'multiplication'
+                };
+            }
+            
+            // Display problem
+            problemElement.textContent = `${currentProblem.left} ${currentProblem.symbol} ${currentProblem.right}`;
+            
+            // Start timer
+            startTime = Date.now();
+            
+            // Set timeout to hide problem and enable input
+            setTimeout(function() {
+                problemElement.textContent = '';
+                answerInput.disabled = false;
+                submitButton.disabled = false;
+                answerInput.focus();
+            }, currentProblem.delayTime);
+        }
+        
+        function checkAnswer() {
+            if (answerInput.disabled) return;
+            
+            const endTime = Date.now();
+            const elapsedSeconds = (endTime - startTime) / 1000;
+            const elapsedSecondsFormatted = elapsedSeconds.toFixed(1);
+            
+            // Try to parse the answer
+            let parsedAnswer;
+            try {
+                parsedAnswer = currentProblem.parse(answerInput.value);
+            } catch (e) {
+                resultElement.textContent = 'Failed to parse input.';
+                resultElement.className = 'result incorrect';
+                setTimeout(startNewProblem, 3000);
+                return;
+            }
+            
+            // Check if correct
+            let isCorrect = false;
+            
+            if (Array.isArray(parsedAnswer) && Array.isArray(currentProblem.expected)) {
+                isCorrect = parsedAnswer.length === currentProblem.expected.length &&
+                           parsedAnswer.every((val, i) => val === currentProblem.expected[i]);
+            } else {
+                isCorrect = parsedAnswer === currentProblem.expected;
+            }
+            
+            // Update statistics
+            const statsObj = currentProblem.type === 'division' ? stats.division : stats.multiplication;
+            statsObj.totalProblems++;
+            
+            // Accuracy is binary (correct or not)
+            const accuracy = isCorrect ? 1 : 0;
+            statsObj.accuracyEMA = updateEMA(statsObj.accuracyEMA, accuracy, statsObj.totalProblems);
+            
+            // Only update time EMA for correct answers
+            if (isCorrect) {
+                statsObj.correctProblems++;
+                // Initialize timeEMA if it's the first correct answer
+                if (statsObj.timeEMA === null) {
+                    statsObj.timeEMA = elapsedSeconds;
+                } else {
+                    statsObj.timeEMA = updateEMA(statsObj.timeEMA, elapsedSeconds, statsObj.correctProblems);
+                }
+            }
+            
+            // Mark that we have data for this problem type
+            statsObj.hasData = true;
+            
+            // Update the displayed stats
+            updateStatsDisplay();
+            
+            // Display result
+            const problemText = `${currentProblem.left} ${currentProblem.symbol} ${currentProblem.right}`;
+            const correctAnswer = Array.isArray(currentProblem.expected) ? 
+                                  currentProblem.expected.join(', ') : 
+                                  currentProblem.expected;
+            
+            if (isCorrect) {
+                resultElement.textContent = `Correct in ${elapsedSecondsFormatted}s (correct ${problemText} = ${correctAnswer})`;
+                resultElement.className = 'result correct';
+            } else {
+                resultElement.textContent = `Incorrect in ${elapsedSecondsFormatted}s (correct ${problemText} = ${correctAnswer})`;
+                resultElement.className = 'result incorrect';
+            }
+            
+            // Add to history
+            const historyItem = document.createElement('div');
+            historyItem.textContent = resultElement.textContent;
+            historyItem.className = isCorrect ? 'correct' : 'incorrect';
+            historyElement.prepend(historyItem);
+            
+            // Disable input
+            answerInput.disabled = true;
+            submitButton.disabled = true;
+            
+            // Start a new problem after delay
+            setTimeout(startNewProblem, 3000);
+        }
+    </script>
+</body>
+</html>
